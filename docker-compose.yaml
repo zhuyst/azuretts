@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  azuretts:
+    build: .
+    restart: always
+    ports:
+      - "9000:8080"
+    environment:
+      ENDPOINT: ""
+      SECRET_KEY: ""

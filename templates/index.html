@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Azure TTS for 巫女酱子</title>
+    <script src="./jquery.js"></script>
+    <script>
+        $(document).ready(function () {
+            var langEle = $("#lang")
+            var list = JSON.parse("{{.list}}")
+            console.log(list)
+            for (var lang in list) {
+                var option = $("<option></option>").text(lang)
+                option.val(lang)
+                langEle.append(option)
+            }
+
+            var nameEle = $("#name")
+            langEle.change(function () {
+                nameEle.empty()
+                var defaultOption = $("<option></option>").text("未选择")
+                nameEle.append(defaultOption)
+
+                var currentLang = langEle.val()
+                console.log("lang:", currentLang)
+                var voices = list[currentLang]
+                for (var val in voices) {
+                    var voice = voices[val]
+                    var text = voice.Gender + " - " + voice.DisplayName + " - " + voice.LocalName
+                    var option = $("<option></option>").text(text)
+                    option.val(voice.ShortName)
+                    nameEle.append(option)
+                }
+            })
+
+            var styleEle = $("#style")
+            nameEle.change(function () {
+                styleEle.empty()
+                var defaultOption = $("<option></option>").text("未选择")
+                styleEle.append(defaultOption)
+
+                var currentLang = langEle.val()
+                var currentName = nameEle.val()
+                console.log("currentName: ", currentName)
+
+                var voice = list[currentLang][currentName]
+                console.log("voice: ", voice)
+
+                if (!voice.StyleList || voice.StyleList.length === 0) {
+                    styleEle.attr("disabled", "disabled")
+                    return
+                }
+
+                styleEle.removeAttr("disabled")
+                for (var style of voice.StyleList) {
+                    var option = $("<option></option>").text(style)
+                    option.val(style)
+                    styleEle.append(option)
+                }
+            })
+
+            var voiceEle = $("#voice")
+            var pitchEle = $("#pitch")
+            var rateEle = $("#rate")
+
+            var audioEle = $("#audio")
+            var audioSource = $("#audio_source")
+            var audioEmbed = $("#audio_embed")
+
+            var currentFilePath = ""
+            var currentVoice = ""
+
+            var generateBtn = $("#generate")
+            var downloadBtn = $("#download")
+            generateBtn.click(function () {
+                var currentLang = langEle.val()
+                var currentName = nameEle.val()
+                var voice = list[currentLang][currentName]
+
+                var pitch = pitchEle.val()
+                if(pitch > 0) {
+                    pitch = "+" + pitch
+                }
+                pitch = pitch.toString()
+
+                var rate = rateEle.val()
+                if(rate > 0) {
+                    rate = "+" + rate
+                }
+                rate = rate.toString()
+
+                var voiceContent = voiceEle.val()
+                currentVoice = voiceContent
+
+                var data = {
+                    "lang": voice.Locale,
+                    "name": voice.ShortName,
+                    "gender": voice.Gender,
+                    "voice": voiceContent,
+                    "pitch": pitch,
+                    "rate": rate,
+                    "style": styleEle.val(),
+                }
+                console.log("data: ", data)
+
+                generateBtn.attr("disabled", "disabled")
+                downloadBtn.attr("disabled", "disabled")
+
+                $.ajax({
+                    url: "./voice",
+                    method: "POST",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function (res){
+                        console.log("filename: ", res.file_name)
+                        currentFilePath = "./result/" + res.file_name
+                        audioSource.attr("src", currentFilePath)
+                        audioEmbed.attr("src", currentFilePath)
+                        audioEle.get(0).load()
+                        audioEle.get(0).play()
+                    },
+                    complete: function () {
+                        generateBtn.removeAttr("disabled")
+                        downloadBtn.removeAttr("disabled")
+                    }
+                })
+            })
+
+            downloadBtn.click(function () {
+                if(!currentFilePath) {
+                    return
+                }
+                var xhr = new XMLHttpRequest()
+                xhr.open("GET", currentFilePath, true)
+                xhr.responseType = "blob"
+                xhr.onload = function () {
+                    if(this.status !== 200) {
+                        console.log("status: ", this.status)
+                    }
+                    var blob = this.response;
+                    var reader = new FileReader()
+                    reader.readAsDataURL(blob)
+                    reader.onload = function (e) {
+                        var link = document.createElement("a");
+                        link.download = currentVoice.substring(0, 10) + ".mp3";
+                        link.style.display = "none"
+                        link.href = e.target.result;
+                        document.body.appendChild(link);
+                        link.click();
+                        URL.revokeObjectURL(link.href);
+                        document.body.removeChild(link);
+                    }
+                }
+                xhr.send()
+                // window.open(currentFilePath)
+            })
+        })
+    </script>
+</head>
+<body>
+<div id="app">
+    <label>
+        语言：
+        <select id="lang">
+            <option>未选择</option>
+        </select>
+    </label>
+    <br/>
+    <label>
+        语音：
+        <select id="name">
+            <option>未选择</option>
+        </select>
+    </label>
+    <br/>
+    <label>
+        说话风格：
+        <select id="style">
+            <option>未选择</option>
+        </select>
+    </label>
+    <br/>
+    <label>
+        语速：
+        <input type="range" min="-50" max="50" value="0" id="rate">
+    </label>
+    <br/>
+    <label>
+        音调：
+        <input type="range" min="-50" max="50" value="0" id="pitch">
+    </label>
+    <br/>
+    <label>
+        内容：
+        <textarea rows="10" cols="30" id="voice"></textarea>
+    </label>
+    <br/>
+    <button type="submit" id="generate">生成</button>
+    <br/>
+    <audio controls autoplay id="audio">
+        <source src="" type="audio/mpeg" id="audio_source">
+        <embed height="50" width="100" src="" id="audio_embed">
+    </audio>
+    <br/>
+    <button type="submit" id="download" disabled>下载</button>
+</div>
+</body>
+</html>

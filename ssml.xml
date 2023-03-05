@@ -1,0 +1,12 @@
+<speak version='1.0'
+       xmlns='http://www.w3.org/2001/10/synthesis'
+       xmlns:mstts='https://www.w3.org/2001/mstts'
+       xml:lang='{{.Lang}}'>
+    <voice xml:lang='{{.Lang}}' xml:gender='{{.Gender}}' name='{{.Name}}'>
+        <mstts:express-as style='{{.Style}}' styledegree='{{.StyleDegree}}'>
+            <prosody pitch='{{.Pitch}}%' rate='{{.Rate}}%'>
+                {{.Voice}}
+            </prosody>
+        </mstts:express-as>
+    </voice>
+</speak>
