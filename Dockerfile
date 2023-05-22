@@ -22,8 +22,8 @@ RUN sed -i s@/[a-z]*.debian.org/@/mirrors.tuna.tsinghua.edu.cn/@g /etc/apt/sourc
 
 WORKDIR /app
 
-COPY templates/** /app/templates/
-COPY static/** /app/static/
+COPY templates /app/templates
+COPY static /app/static
 COPY ssml.xml /app/ssml.xml
 COPY --from=BUILDER /app/azuretts /app/azuretts
 
