@@ -20,6 +20,11 @@
                 langEle.append(option)
             }
 
+            var genderMap = {
+                "Female": "女",
+                "Male": "男"
+            }
+
             var nameEle = $("#name")
             langEle.change(function () {
                 nameEle.empty()
@@ -31,7 +36,11 @@
                 var voices = list[currentLang]
                 for (var val in voices) {
                     var voice = voices[val]
-                    var text = voice.Gender + " - " + voice.DisplayName + " - " + voice.LocalName
+                    var gender = genderMap[voice.Gender]
+                    if(!gender) {
+                        gender = voice.Gender
+                    }
+                    var text = gender + " - " + voice.DisplayName + " - " + voice.LocalName
                     var option = $("<option></option>").text(text)
                     option.val(voice.ShortName)
                     nameEle.append(option)
