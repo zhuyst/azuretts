@@ -65,8 +65,18 @@
             })
 
             var voiceEle = $("#voice")
+
             var pitchEle = $("#pitch")
+            var pitchValEle = $("#pitch-value")
+            pitchEle.on("input", function () {
+                pitchValEle.text(pitchEle.val())
+            })
+
             var rateEle = $("#rate")
+            var rateValEle = $("#rate-value")
+            rateEle.on("input", function () {
+                rateValEle.text(rateEle.val());
+            })
 
             var audioEle = $("#audio")
             var audioSource = $("#audio_source")
@@ -203,11 +213,17 @@
             </div>
             <div class="form-group">
                 <label class="form-label" for="rate">语速：</label>
-                <input type="range" min="-50" max="50" value="0" id="rate" class="form-range">
+                <div class="d-flex align-items-center">
+                    <input type="range" min="-50" max="50" value="0" id="rate" class="form-range">
+                    <span class="mx-2" id="rate-value">0</span>
+                </div>
             </div>
             <div class="form-group">
                 <label class="form-label" for="pitch">音调：</label>
-                <input type="range" min="-50" max="50" value="0" id="pitch" class="form-range">
+                <div class="d-flex align-items-center">
+                    <input type="range" min="-50" max="50" value="0" id="pitch" class="form-range">
+                    <span class="mx-2" id="pitch-value">0</span>
+                </div>
             </div>
             <div class="form-group">
                 <audio controls autoplay id="audio">
