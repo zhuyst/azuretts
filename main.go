@@ -29,7 +29,10 @@ func main() {
 		return
 	}
 
-	r.StaticFile("/jquery.js", "./js/jquery-3.6.3.min.js")
+	r.StaticFile("/static/js/jquery.js", "./static/js/jquery-3.6.3.min.js")
+	r.StaticFile("/static/js/bootstrap.js", "./static/js/bootstrap.min.js")
+	r.StaticFile("/static/css/bootstrap.css", "./static/css/bootstrap.min.css")
+
 	r.Static("./result/", "./result/")
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{
