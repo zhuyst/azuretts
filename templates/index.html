@@ -143,8 +143,8 @@
                         currentFilePath = "./result/" + res.file_name
                         audioSource.attr("src", currentFilePath)
                         audioEmbed.attr("src", currentFilePath)
+                        audioEle.get(0).load()
                         if(autoplayCheckbox.is(":checked")) {
-                            audioEle.get(0).load()
                             audioEle.get(0).play()
                         }
                     },
@@ -235,7 +235,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <audio controls autoplay id="audio">
+                <audio controls id="audio">
                     <source src="" type="audio/mpeg" id="audio_source">
                     <embed height="50" width="100" src="" id="audio_embed">
                 </audio>
