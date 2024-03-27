@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	uuid "github.com/satori/go.uuid"
 	"io"
@@ -44,6 +45,7 @@ type VoiceParams struct {
 }
 
 func Voice(params *VoiceParams) (string, error) {
+	params.Voice = escapeXmlText(params.Voice)
 	buf := bytes.NewBuffer([]byte{})
 	if err := TextTemplate.ExecuteTemplate(buf, TextTemplateName, params); err != nil {
 		return "", err
@@ -60,20 +62,25 @@ func Voice(params *VoiceParams) (string, error) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		println(err.Error())
 		return "", err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("status_code: %d", resp.StatusCode)
+		err := fmt.Errorf("status_code: %d", resp.StatusCode)
+		println(err.Error())
+		return "", err
 	}
 
 	fileName := uuid.NewV4().String() + ".mp3"
 	file, err := os.OpenFile("./result/"+fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
+		println(err.Error())
 		return "", err
 	}
 	defer file.Close()
 
 	if _, err := io.Copy(file, resp.Body); err != nil {
+		println(err.Error())
 		return "", err
 	}
 	return fileName, nil
@@ -133,4 +140,10 @@ func List() ([]*VoiceItem, error) {
 	}
 
 	return items, nil
+}
+
+func escapeXmlText(text string) string {
+	var escapeTextBuf bytes.Buffer
+	xml.Escape(&escapeTextBuf, []byte(text))
+	return escapeTextBuf.String()
 }
